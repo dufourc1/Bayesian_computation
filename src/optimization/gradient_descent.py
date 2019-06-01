@@ -87,6 +87,8 @@ def line_search_gd(model, lambda_, x0, alpha = 0.2, beta = 0.5, max_iter = 20, e
         energies.append(f(candidate))
 
         old = candidate
+        if i%5 == 0 or i == max_iter-1:
+            update_progress((i+1)/max_iter)
 
     model.results["line_search_gd"] = old
 
@@ -126,17 +128,15 @@ def Wolfe_cond_gd(model, lambda_0 = None, initial = None, max_iter = 10,
                 trace_energy.append(model.neg_log_posterior(proposal))
                 trace_theta.append(proposal)
                 trace_lambdas.append(step_size)
-                theta = proposal
+            theta = proposal
         elif checks[0]:
             step_size *= beta_C1
         elif checks[1]:
             step_size *= beta_C2
         else:
-            #print("Warning Wolfe conditions both evaluated at wrong")
-            fuck = 1
             raise RuntimeError("Wolfe conditions both wrong, gradient must be wrong")
         if i%5==0 or i == max_iter-1:
-            update_progress((i+1)/max_iter,step_size)#,message = "decision {}".format(checks))
+            update_progress((i+1)/max_iter)
     end = time.time()
     print("  duration: {}".format(str(datetime.timedelta(
                                                 seconds= round(end-start)))))
