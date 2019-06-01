@@ -50,7 +50,11 @@ The folder structure is the following:
 
 Contains the following classes:
 
-    Model
+    Model:
+
+        A model consist of a prior and a conditional model plus the data corresponding to the problem.
+        Using autograd, one can compute the posterior, the log posterior, the gradient and the hessian
+        of those quantities
 
     Prior
 
