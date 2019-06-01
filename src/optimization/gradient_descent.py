@@ -1,7 +1,8 @@
 """
 gradient descent variant
 
-automaticaly find the MAP of the posterior passed in parameter
+automaticaly find the MAP of the posterior passed in parameter by minimizing the
+negative log posterior of the model
 
 """
 import autograd.numpy as np
@@ -15,23 +16,22 @@ import time,datetime
 ################################################################################
 
 
-
-def vanilla_gd(model, max_iter = 10, step_size = 1e-4, initial = None, trace = False,RETURN = False):
+def vanilla_gd(model, max_iter = 10, step_size = 1e-4, initial = None, trace = False,RETURN = False,save = True):
 
     if initial is None:
         initial = np.random.randn(model.size)
         #set the variance to a positive parameter
         initial[0]=1
 
-    fun = model.log_posterior
-    grad_fun = model.log_posterior_grad
+    fun = model.neg_log_posterior
+    grad_fun = model.neg_log_posterior_grad
     trace_energy = [fun(initial)]
     trace_theta = [initial]
 
     start = time.time()
     theta = initial
     for i in range(max_iter):
-        theta = theta + step_size*model.log_posterior_grad(theta)
+        theta = theta - step_size*grad_fun(theta)
         trace_theta.append(theta)
         trace_energy.append(fun(theta))
 
@@ -41,7 +41,8 @@ def vanilla_gd(model, max_iter = 10, step_size = 1e-4, initial = None, trace = F
     print("  duration: {}".format(str(datetime.timedelta(
                                                 seconds= round(end-start)))))
 
-    model.results["gd"] = theta
+    if save:
+        model.results["gd"] = theta
 
 
     if trace :
@@ -49,48 +50,19 @@ def vanilla_gd(model, max_iter = 10, step_size = 1e-4, initial = None, trace = F
     elif RETURN:
         return theta
 
-def line_search_gd(model):
-    return NotImplemented
 
-def Wolfe_cond_gd(model):
-    return NotImplemented
-
-def stochastic_gd(model):
-    return NotImplemented
-
-def newton_gd():
-    return NotImplemented
+def line_search_gd(model, lambda_, x0, alpha = 0.2, beta = 0.5, max_iter = 20, epsilon = 1e-4,
+                    trace = False, RETURN = False):
 
 
 
-################################################################################
-#
-################################################################################
-
-def line_search_gd(f, df, lambda_, x0, alpha = 0.2, beta = 0.5, n = 20, epsilon = 1e-4):
-    '''
-    return the n first steps of linear search gradient descent (adaptative step-size)
-
-    input:
-        f: function to minimize
-        df: gradient of the function
-        lambda_0 : initial step-size
-        x0: initial value for the algorithm
-        alpha: parameter to avoid overshooting in [0,1]
-        beta: parameter to update the step-size in [0,1]
-        n: number of iterations of the algorithm
-        epsilon: paramter to check convergence of the algorithm
-
-    output:
-        values, energies
-        values = array containing the n first coordinate of the gradient descent algortihm
-        energies = array containing the value of the function at these points
-    '''
+    f = model.neg_log_posterior
+    df = model.neg_log_posterior_grad
     values = [x0]
     energies = [f(x0)]
 
     old = x0
-    for i in range(n):
+    for i in range(max_iter):
 
         gradient = df(old)
         l = lambda_
@@ -116,113 +88,125 @@ def line_search_gd(f, df, lambda_, x0, alpha = 0.2, beta = 0.5, n = 20, epsilon 
 
         old = candidate
 
+    model.results["line_search_gd"] = old
 
-    return values,energies
-
-def newton_gd(f, df, hf, x0, alpha = 0.2, beta = 0.5, n = 20, epsilon = 1e-4):
-    '''
-    return the n first steps of gradient descent using newton's method (adaptative step-size)
-
-    input:
-        f: function to minimize
-        df: gradient of the function
-        hf: hessian of f
-        x0: initial value for the algorithm
-        alpha: parameter to avoid overshooting in [0,1]
-        beta: parameter to update the step-size in [0,1]
-        n: number of iterations of the algorithm
-        epsilon: paramter to check convergence of the algorithm
-
-    output:
-        values, energies
-        values = array containing the n first coordinate of the gradient descent algortihm
-        energies = array containing the value of the function at these points
-    '''
-    values = np.array([x0])
-    energies = [f(x0)]
-
-    xn = x0
-
-    for i in range(n):
-
-        gradient = df(xn)
-        hessian_inv = inv(hf(xn))
-        l = 1
-
-        v = np.dot(hessian_inv,gradient)
-        candidate = xn - l*v
-
-        if np.linalg.norm(candidate-xn)< epsilon:
-            break
-
-        #securtiy measure
-        j = 0
-        while f(candidate) > f(xn) - l*alpha*np.dot(gradient.T ,np.dot(hessian_inv, gradient)):
-            j+= 1
-            l*= beta
-            candidate = xn - l*v
-            if j > 100:
-                print("more than 100 iterations to adjust the step size")
-                break
-        values = np.concatenate((values,candidate.reshape(1,len(candidate))))
-        energies.append(f(candidate))
-        xn = candidate
-
-    return values,energies
-
-def stochastic_gd(f, df, x0, batch_size = None, lambdas = None, n = 50, epsilon = 1e-4,*args):
-    '''
-    return the n first steps of gradient descent using stochastic gradient descent
-
-    input:
-        f: function to minimize
-        df: !!! gradient of the function for one point only !!! df(theta,**kwargs)
-        x0: initial value for the algorithm
-        batch_size: size of the batches used to compute the stochastic gradient descent
-        lambdas() : function that returns a step size for each n it's given
-        n: number of iterations of the algorithm
-        epsilon: paramter to check convergence of the algorithm
-        *args: arg needed to compute the gradient, should be numpy array for the batching process to work
-
-    output:
-        values, energies
-        values = array containing the n first coordinate of the gradient descent algortihm
-        energies = array containing the value of the function at these points
-    '''
-
-    if lambdas == None:
-        def lambdas(n):
-            return (n+1)**(-2)
-    if batch_size == None:
-        batch_size = int(len(args[0])/10)
+    if trace:
+        return values,energies
+    if RETURN:
+        return old
 
 
-    values = np.array([x0])
-    energies = [f(x0)]
-    old = x0
+def Wolfe_cond_gd(model, lambda_0 = None, initial = None, max_iter = 10,
+                trace = False, RETURN = False,
+                c1= 1e-4, c2= 0.9, beta_C1= 0.9, beta_C2 = 1.1):
 
-    for i in range(n):
+    if initial is None:
+        initial = np.ones(model.size)
+    if lambda_0 is None:
+        lambda_0 = 1e-3
 
-        #compute the stochastic_gd
-        gradient = 0
-        for x,y in batch_iter(*args, batch_size, num_batches=1, shuffle=True):
-            gradient += df(old,x,y)
+    if trace:
+        trace_theta = [initial]
+        trace_lambdas = [lambda_0]
+        trace_energy = [model.neg_log_posterior(initial)]
+
+    theta = initial.copy()
+    step_size = lambda_0
+
+    start = time.time()
+
+    for i in range(max_iter):
+        proposal = theta-step_size*model.neg_log_posterior_grad(theta)
+        checks = check_wolfe_conditions(model.neg_log_posterior,
+                                        model.neg_log_posterior_grad,
+                                        theta,step_size,
+                                        c1,c2)
+        if checks[0] and checks[1]:
+            if trace:
+                trace_energy.append(model.neg_log_posterior(proposal))
+                trace_theta.append(proposal)
+                trace_lambdas.append(step_size)
+                theta = proposal
+        elif checks[0]:
+            step_size *= beta_C1
+        elif checks[1]:
+            step_size *= beta_C2
+        else:
+            #print("Warning Wolfe conditions both evaluated at wrong")
+            fuck = 1
+            raise RuntimeError("Wolfe conditions both wrong, gradient must be wrong")
+        if i%5==0 or i == max_iter-1:
+            update_progress((i+1)/max_iter,step_size)#,message = "decision {}".format(checks))
+    end = time.time()
+    print("  duration: {}".format(str(datetime.timedelta(
+                                                seconds= round(end-start)))))
+
+    model.results["Wolfe_cond_gd"] = theta
+
+    if RETURN:
+        return theta
+    if trace:
+        return trace_theta, trace_energy, trace_lambdas
+
+def newton_gd(model,initial = None, max_iter = 10,
+                trace = False, RETURN = False):
+
+    raise RuntimeError("well have to fix it but don't know how")
+    fun = model.neg_log_posterior
+    grad_fun = model.neg_log_posterior_grad
+    hes_fun = model.neg_log_posterior_hessian
+
+    if initial is None:
+        initial = np.ones(model.size)
+        initial[0] = 2
+
+    if trace :
+        trace_thetas = [initial]
+        trace_energy = [fun(initial)]
 
 
-        #update following the usual scheme
-        candidate = old - lambdas(i)*gradient
-        values = np.concatenate((values,candidate.reshape(1,len(candidate))))
-        energies.append(f(candidate))
+    start = time.time()
+    theta = initial.copy()
+    for i in range(max_iter):
+        v = np.dot(np.linalg.inv(hes_fun(theta)),grad_fun(theta))
+        cand = theta - v
+        if trace:
+            trace_thetas.append(cand)
+            trace_energy.append(fun(cand))
+        theta = cand
+        if i%5 == 0 or i == max_iter-1:
+            update_progress((i+1)/max_iter)
 
-        if np.linalg.norm(old-candidate)< epsilon:
-            break
-        old = candidate
+    end = time.time()
+    print("  duration: {}".format(str(datetime.timedelta(
+                                                seconds= round(end-start)))))
 
-    return values,energies
+    model.results["Newton_gd"] = theta
+
+    if trace:
+        return trace_thetas, trace_energy
+    if RETURN:
+        return theta
+
+def stochastic_gd(model):
+    return NotImplemented
+
+
+
 
 ################################################################################
-# utilities form ML course
+#               various helpers
 ################################################################################
+
+#check Wolfe condition for minimization
+def check_wolfe_conditions(fun, grad_fun, theta,lambda_, c1, c2):
+
+    proposal = theta-lambda_*grad_fun(theta)
+    norm_grad = np.linalg.norm(grad_fun(theta))**2
+    C1 = fun(proposal)-fun(theta) - c1*lambda_*norm_grad
+    C2 = -np.dot(grad_fun(theta),grad_fun(proposal)) + c2*norm_grad
+
+    return (C1 <= 0, C2 <= 0)
 
 
 def batch_iter(y, tx, batch_size, num_batches=1, shuffle=True):
@@ -230,7 +214,8 @@ def batch_iter(y, tx, batch_size, num_batches=1, shuffle=True):
     Generate a minibatch iterator for a dataset.
     Takes as input two iterables (here the output desired values 'y' and the input data 'tx')
     Outputs an iterator which gives mini-batches of `batch_size` matching elements from `y` and `tx`.
-    Data can be randomly shuffled to avoid ordering in the original data messing with the randomness of the minibatches.
+    Data can be randomly shuffled to avoid ordering in the original data messing with the randomness
+    of the minibatches.
     Example of use :
     for minibatch_y, minibatch_tx in batch_iter(y, tx, 32):
         <DO-SOMETHING>

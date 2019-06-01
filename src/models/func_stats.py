@@ -11,6 +11,7 @@ import autograd.numpy as np
 from autograd import grad
 from math import pi
 from autograd.scipy.special import gamma
+from autograd.scipy.stats import norm as Normal
 
 
 from scipy.special import factorial
@@ -53,7 +54,8 @@ def normal(theta,mean,var, prod = True):
         float if prod
         np.ndarray if not prod
     """
-
+    if np.min(var)<0:
+        raise ValueError("invalid variance given in normal in func_stats.py")
 
     individual = np.exp(-(theta-mean)**2 / (2*var**2))/ (np.sqrt(2*pi)*var)
 

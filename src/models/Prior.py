@@ -22,7 +22,7 @@ class Prior(object):
         """negative log likelihood"""
         return - self.log_prior(theta)
 
-    def log_posterior_grad(self,theta):
+    def log_prior_grad(self,theta):
         grad_fun = grad(self.log_prior)
         return grad_fun(theta)
 

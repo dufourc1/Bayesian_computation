@@ -48,12 +48,29 @@ class Model(object):
         return self.prior.log_prior(theta) + self.cond_model.log_l(theta)
 
     def log_posterior_grad(self,theta):
-        return self.prior.log_posterior_grad(theta)\
+        return self.prior.log_prior_grad(theta)\
                 +self.cond_model.log_l_grad(theta)
-        return grad_fun(theta)
+
 
     def log_posterior_hessian(self,theta):
-        hes_fun = jacobian(self.log_posterior_grad)
+        return self.prior.log_prior_hes(theta)\
+               +self.cond_model.log_l_hes(theta)
+
+    def neg_log_posterior(self,theta):
+        return -self.log_posterior(theta)
+
+    def neg_log_posterior_grad(self,theta):
+        return -self.log_posterior_grad(theta)
+
+    def neg_log_posterior_hessian(self,theta):
+        return -self.log_posterior_hessian(theta)
+
+    def posterior_grad(self,theta):
+        grad_fun = grad(self.posterior)
+        return grad_fun(theta)
+
+    def posterior_hessian(self,theta):
+        hes_fun = jacobian(self.posterior_grad)
         return hes_fun(theta)
 
 

@@ -8,6 +8,8 @@ from src.helpers import update_progress
 from src.models import func_stats
 
 
+## REVIEW: clean and rewrite the code if time, otherwise seems to work
+
 def random_walk_MH(model, verbose = False, verbose_gen = True, RETURN = False,**kwargs):
     """Metropolis Hastings sampling algortihm.
 
@@ -120,9 +122,7 @@ def random_walk_MH(model, verbose = False, verbose_gen = True, RETURN = False,**
                 return samples, np.mean(record_acceptance)
         return samples
 
-
-
-def Langevin_MH(model,tau,RETURN = False, **kwargs):
+def Langevin_MH(model, tau,verbose = True, verbose_gen = True, RETURN = False,**kwargs):
 
     size = model.size
 
@@ -130,12 +130,6 @@ def Langevin_MH(model,tau,RETURN = False, **kwargs):
         current = np.array(kwargs["initial"])
     else:
         current = np.ones(size)
-
-    if 'step_size' in kwargs.keys():
-        step_size = kwargs["step_size"]
-    else:
-        step_size = 0.04
-        print("default step size selected : {}".format(step_size))
 
     if 'max_iter' in kwargs.keys():
         max_iter = kwargs["max_iter"]
@@ -152,17 +146,24 @@ def Langevin_MH(model,tau,RETURN = False, **kwargs):
         print("Metropolis Hasting started at: {}".format(
                     time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(start))))
 
+    def log_qprop(X,Y,tau,grad ):
+        R = -1/(4*tau)*np.linalg.norm(X-Y-tau*grad(Y))**2
+        return R
+
 
     for k in range(max_iter):
-        proposal = current + 0.5*tau*model.log_posterior_grad(current)+\
-                    sqrt(tau)*np.random.randn(size)
-        ratio = model.log_posterior(proposal) -\
-                model.log_posterior(current)
-        ## TODO: add correction conditional density to update coordinates
-        ratio = ratio + func_stats.normal(current,)- 2
-        ratio = np.exp(ratio)
-
-        threshold = np.random.random()
+        proposal = current + tau*model.log_posterior_grad(current)+\
+                    sqrt(2*tau)*np.random.randn(size)
+        if proposal[0] > 0:
+            ratio = model.log_posterior(proposal) -\
+                    model.log_posterior(current)
+            ratio = ratio - log_qprop(current,proposal,tau,model.log_posterior_grad)
+            ratio += log_qprop(proposal,current,tau,model.log_posterior_grad)
+            ratio = np.exp(ratio)
+            threshold = np.random.random()
+        else:
+            print("variance negative, rejected")
+            ratio = 0
         if ratio > threshold:
             current = proposal
 
