@@ -55,6 +55,7 @@ def normal(theta,mean,var, prod = True):
         np.ndarray if not prod
     """
     if np.min(var)<0:
+        return 0
         raise ValueError("invalid variance given in normal in func_stats.py")
 
     individual = np.exp(-(theta-mean)**2 / (2*var**2))/ (np.sqrt(2*pi)*var)
