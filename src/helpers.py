@@ -4,6 +4,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+
+import plotly.offline as py
+import plotly.graph_objs as go
+import colorlover as cl
+
 sns.set()
 
 ################################################################################
@@ -36,9 +41,59 @@ def update_progress(progress,message=""):
     sys.stdout.write(text)
     sys.stdout.flush()
 
+################################################################################
+#                          PLOTS FOR estimate
+################################################################################
+
+
+def visualisation(df,model):
+
+    predictors_name = np.array(['ED', 'SOUTH', 'NONWH', 'HISP', 'FE', 'MARR', 'MARRFE', 'EX',
+        'UNION', 'MANUF', 'CONSTR', 'MANAG', 'SALES', 'CLER',
+        'SERV', 'PROF'])
+    trace1 = []
+    colors = cl.scales[str(len(df.columns))]["qual"]["Dark2"]
+
+    for i,name in enumerate(df.columns):
+        trace0 = go.Scatter(
+        y = df[name].values,
+        name = name,
+        mode = 'markers',
+        marker = dict(
+            size = 10,
+            color = colors[i]
+        ),
+        opacity=1
+        )
+        trace1.append(trace0)
+
+    if len(df)>16:
+        layout = dict(title = 'Result comparison for model    {}'.format(model.name),
+                  yaxis = dict(zeroline = True),
+                   xaxis = go.layout.XAxis(
+                            tickmode = 'array',
+                            tickvals = np.arange(0,17),
+                            ticktext = np.insert(predictors_name,0,"noise"),
+                           zeroline = False
+                   )
+                 )
+    else:
+        layout = dict(title = 'Result comparison',
+                  yaxis = dict(zeroline = True),
+                   xaxis = go.layout.XAxis(
+                            tickmode = 'array',
+                            tickvals = np.arange(0,16),
+                            ticktext = predictors_name,
+                           zeroline = False
+                   )
+                 )
+
+    fig = dict(data=trace1, layout=layout)
+    py.iplot(fig)
+
 
 ################################################################################
-#                               PLOTS
+#                          PLOTS FOR METROPOLIS HASTINGS
 ################################################################################
 
 
@@ -47,6 +102,45 @@ def big_plot(a = 16.0,b = 8.0):
 
 def reset_plot():
     plt.rcParams['figure.figsize'] = (8.0, 4.0)
+
+
+def compare_samples_MH(sample1,sample2):
+    fig, axs = plt.subplots(4, 4, figsize=(16, 16), sharey=True, sharex = True)
+    axs[0,0].plot(sample1[:,1], alpha = 0.8)
+    axs[0,1].plot(sample1[:,2], alpha = 0.8)
+    axs[0,2].plot(sample1[:,3], alpha = 0.8)
+    axs[0,3].plot(sample1[:,4], alpha = 0.8)
+    axs[0,0].plot(sample2[:,1], alpha = 0.8)
+    axs[0,1].plot(sample2[:,2], alpha = 0.8)
+    axs[0,2].plot(sample2[:,3], alpha = 0.8)
+    axs[0,3].plot(sample2[:,4], alpha = 0.8)
+    axs[1,0].plot(sample1[:,5], alpha = 0.8)
+    axs[1,1].plot(sample1[:,6], alpha = 0.8)
+    axs[1,2].plot(sample1[:,7], alpha = 0.8)
+    axs[1,3].plot(sample1[:,8], alpha = 0.8)
+    axs[1,0].plot(sample2[:,5], alpha = 0.8)
+    axs[1,1].plot(sample2[:,6], alpha = 0.8)
+    axs[1,2].plot(sample2[:,7], alpha = 0.8)
+    axs[1,3].plot(sample2[:,8], alpha = 0.8)
+    axs[2,0].plot(sample1[:,9], alpha = 0.8)
+    axs[2,1].plot(sample1[:,10], alpha = 0.8)
+    axs[2,2].plot(sample1[:,11], alpha = 0.8)
+    axs[2,3].plot(sample1[:,12], alpha = 0.8)
+    axs[2,0].plot(sample2[:,9], alpha = 0.8)
+    axs[2,1].plot(sample2[:,10], alpha = 0.8)
+    axs[2,2].plot(sample2[:,11], alpha = 0.8)
+    axs[2,3].plot(sample2[:,12], alpha = 0.8)
+    axs[3,0].plot(sample1[:,13], alpha = 0.8)
+    axs[3,1].plot(sample1[:,14], alpha = 0.8)
+    axs[3,2].plot(sample1[:,15], alpha = 0.8)
+    axs[3,3].plot(sample1[:,16], alpha = 0.8)
+    axs[3,0].plot(sample2[:,13], alpha = 0.8)
+    axs[3,1].plot(sample2[:,14], alpha = 0.8)
+    axs[3,2].plot(sample2[:,15], alpha = 0.8)
+    axs[3,3].plot(sample2[:,16], alpha = 0.8)
+    plt.ylim(-1.5,1.5)
+    plt.tight_layout()
+    plt.show()
 
 def autocorrelation(time_series, maxRange):
     # estimate the autocorrelation
@@ -70,7 +164,6 @@ def autocorrelation(time_series, maxRange):
         ans[k] = corr
 
     return delta, ans
-
 
 def showAutocorrelation(samples, delta = None, col = None):
 

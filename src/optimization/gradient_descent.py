@@ -64,6 +64,7 @@ def line_search_gd(model, lambda_, x0, alpha = 0.2, beta = 0.5, max_iter = 20, e
     energies = [f(x0)]
 
     old = x0
+    start = time.time()
     for i in range(max_iter):
 
         gradient = df(old)
@@ -93,6 +94,9 @@ def line_search_gd(model, lambda_, x0, alpha = 0.2, beta = 0.5, max_iter = 20, e
         if i%5 == 0 or i == max_iter-1:
             update_progress((i+1)/max_iter)
 
+    end = time.time()
+    print("  duration: {}".format(str(datetime.timedelta(
+                                                seconds= round(end-start)))))
     model.results["line_search_gd"] = old
 
     if trace:

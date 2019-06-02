@@ -135,6 +135,10 @@ def Langevin_MH(model, tau,verbose = True, verbose_gen = True, RETURN = False,**
         max_iter = kwargs["max_iter"]
     else:
         max_iter = 10
+    if "step_size" in kwargs.keys():
+        step_size = kwargs["step_size"]
+    else:
+        step_size = 1
 
 
 
@@ -149,8 +153,8 @@ def Langevin_MH(model, tau,verbose = True, verbose_gen = True, RETURN = False,**
 
 
     for k in range(max_iter):
-        proposal = current + tau*model.log_posterior_grad(current)+\
-                    sqrt(2*tau)*np.random.randn(size)
+        proposal = current + step_size*(tau*model.log_posterior_grad(current)+\
+                     sqrt(2*tau)*np.random.randn(size))
         if proposal[0] > 0 or model.name == "Conditional model : Multilogistic,  Prior : gaussian":
             ratio = model.log_posterior(proposal) -\
                     model.log_posterior(current)

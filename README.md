@@ -60,8 +60,14 @@ Contains the following classes:
 `model.log_posterior_hessian`
 
     Prior
+`prior.log_prior`
+`prior.log_prior_grad`
+`prior.log_prior_hessian`
 
     Conditional_model
+`cond_mod.log_l`
+`cond_mod.log_l_grad`
+`v.log_l_hessian
 
 ### optimization
 
@@ -74,7 +80,7 @@ Contains the following classes:
 
     Wolfe_cond_gd
 
-    stochastic_gd
+    stochastic_gd (notImplemented)
 
     newton_gd (notImplemented)
 
@@ -96,7 +102,7 @@ Contains the following classes:
 
     rejection_sampling
 
-    Gibbs_sampling
+    Gibbs_sampling (notImplemented)
 
     random_walk_MH
 
