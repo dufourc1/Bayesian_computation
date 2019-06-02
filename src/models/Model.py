@@ -4,6 +4,7 @@ General abstract class of a model, contains a prior and a conditional distributi
 
 import autograd.numpy as np
 from autograd import grad,jacobian
+import pandas as pd
 
 
 
@@ -31,6 +32,14 @@ class Model(object):
         if "additional_param" in kwargs.keys():
             self.size += kwargs["additional_param"]
 
+        if "predictors_names" in kwargs.keys():
+            self.names_pred = kwargs["predictors_name"]
+        else:
+            self.names_pred = np.array(['ED', 'SOUTH', 'NONWH', 'HISP',
+                                        'FE', 'MARR', 'MARRFE', 'EX',
+                                        'UNION', 'MANUF', 'CONSTR', 'MANAG',
+                                        'SALES', 'CLER', 'SERV', 'PROF'])
+
         if self.cond_model.name == "Multilogistic":
             # number of classes * dimension of linear param
             self.size = (self.cond_model.number_classes-1)*self.data.shape[1]
@@ -51,10 +60,10 @@ class Model(object):
         return self.prior.log_prior_grad(theta)\
                 +self.cond_model.log_l_grad(theta)
 
-
     def log_posterior_hessian(self,theta):
         return self.prior.log_prior_hes(theta)\
                +self.cond_model.log_l_hes(theta)
+
 
     def neg_log_posterior(self,theta):
         return -self.log_posterior(theta)
@@ -65,13 +74,19 @@ class Model(object):
     def neg_log_posterior_hessian(self,theta):
         return -self.log_posterior_hessian(theta)
 
-    def posterior_grad(self,theta):
-        grad_fun = grad(self.posterior)
-        return grad_fun(theta)
+    def view(self):
+        if len(self.results)== 0:
+            return "no results yet"
+        inter = pd.DataFrame(self.results).T
+        if self.size > len(self.names_pred):
+            inter.columns = np.insert(self.names_pred,0,"error prior")
+        else:
+            inter.columns = self.names_pred
+        inter = inter.T
+        return inter
 
-    def posterior_hessian(self,theta):
-        hes_fun = jacobian(self.posterior_grad)
-        return hes_fun(theta)
+    def __call__(self):
+        return self.view()
 
 
     def __repr__(self):

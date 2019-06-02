@@ -154,7 +154,7 @@ def Langevin_MH(model, tau,verbose = True, verbose_gen = True, RETURN = False,**
     for k in range(max_iter):
         proposal = current + tau*model.log_posterior_grad(current)+\
                     sqrt(2*tau)*np.random.randn(size)
-        if proposal[0] > 0:
+        if proposal[0] > 0 or model.name == "Conditional model : Logistic,  Prior : gaussian":
             ratio = model.log_posterior(proposal) -\
                     model.log_posterior(current)
             ratio = ratio - log_qprop(current,proposal,tau,model.log_posterior_grad)
@@ -162,7 +162,6 @@ def Langevin_MH(model, tau,verbose = True, verbose_gen = True, RETURN = False,**
             ratio = np.exp(ratio)
             threshold = np.random.random()
         else:
-            print("variance negative, rejected")
             ratio = 0
         if ratio > threshold:
             current = proposal

@@ -52,9 +52,12 @@ Contains the following classes:
 
     Model:
 
-        A model consist of a prior and a conditional model plus the data corresponding to the problem.
-        Using autograd, one can compute the posterior, the log posterior, the gradient and the hessian
-        of those quantities
+        A model consist of a prior and a conditional model plus the data corresponding
+        to the problem. Using autograd, one can compute the posterior, the log posterior,
+        the gradient and the hessian of those quantities directly by calling:
+`model.log_posterior`
+`model.log_posterior_grad`
+`model.log_posterior_hessian`
 
     Prior
 
@@ -62,7 +65,8 @@ Contains the following classes:
 
 ### optimization
 
-  Implementation of the optimization routine seen in the course:
+  Implementation of the optimization routine seen in the course, specialized to treat the problem
+  of maximizing the posterior of a model by minimizing the negative log posterior of the same model
 
     vanilla_gd
 
@@ -72,7 +76,7 @@ Contains the following classes:
 
     stochastic_gd
 
-    newton_gd
+    newton_gd (notImplemented)
 
 
 
@@ -132,7 +136,7 @@ The details of the statistical analysis are written in the notebook, only the da
 
 | FE 	| MARR	| MARRFE| SOUTH | NONWH | HISP |
 |-------|--------| -----|
-| sex (1 if female) | marital status    | marital status of female  | geograpical data| non white | hispanique| 
+| sex (1 if female) | marital status    | marital status of female  | geograpical data| non white | hispanique|
 
 ## Author
 

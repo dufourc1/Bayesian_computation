@@ -10,6 +10,8 @@ from autograd.numpy.linalg import inv
 from src.helpers import update_progress
 import time,datetime
 
+import matplotlib.pyplot as plt
+
 
 ################################################################################
 #optimization functions
@@ -69,7 +71,8 @@ def line_search_gd(model, lambda_, x0, alpha = 0.2, beta = 0.5, max_iter = 20, e
 
         candidate = old-l*gradient
 
-        if np.linalg.norm(candidate-old)< epsilon:
+        if np.linalg.norm(candidate-old)< epsilon*l:
+            update_progress(1,"converged early at iteration {}".format(i+1))
             break
 
         #security measure

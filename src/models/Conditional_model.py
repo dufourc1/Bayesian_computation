@@ -103,65 +103,49 @@ class Gamma(Conditional_model):
                             )
                     )
 
-class Multilogistic(Conditional_model):
+class Logistic(Conditional_model):
 
     def __init__(self,X,y, number_classes, **kwargs):
-        super(Multilogistic,self).__init__(X,y,**kwargs)
+        super(Logistic,self).__init__(X,y,**kwargs)
         self.number_classes = number_classes
-        self.name = "Multilogistic"
+        self.name = "Logistic"
 
     def extract_proba(self,theta):
 
-        #reshaping data
-        dim = self.X.shape[1]
-        Betas = theta.reshape(dim,self.number_classes-1)
 
         #computing probabilities
-        P = np.dot(self.X,Betas)
-
-        #add the last column as the reference one for identifiability
-        X0 = 0.*np.zeros((P.shape[0],1))
-        P = np.hstack((P,X0))
-        #softmax
-        P = np.exp(P)
-        cste = 1/np.sum(P,axis = 1)
-        P = cste[:,None]*P
-
+        expo = np.exp(np.dot(self.X,theta))
+        P = expo/(1+expo)
         return P
-
 
     def l(self,theta):
 
-        #reshaping data
-        y_temp = convert_to_one_hot(self.y)
         #computing probabilities
         P = self.extract_proba(theta)
         #computing the likelihood
-        return np.prod(P**y_temp)
+        return np.prod(P**self.y)*np.prod((1-P)**(1-self.y))
 
 
 
     def log_l(self,theta):
 
-        #reshaping the data
-        y_temp = convert_to_one_hot(self.y)
         #computing probabilities
         P = self.extract_proba(theta)
         #compute the log_likelihood in a satble manner
-        return np.sum(np.log(P**y_temp))
+        return np.sum(np.log(P**self.y))
 
 
-
-    ## TODO: Implement those if time
 
     def log_l_grad(self,theta):
-        return NotImplemented
-
-    def log_l_grad(self, theta):
-        return NotImplemented
+        P = self.extract_proba(theta)
+        inter = (self.y - P)*self.X.T
+        return np.sum(inter,axis = 1)
 
     def log_l_hes(self, theta):
-        return NotImplemented
+        P = self.extract_proba(theta)
+        return np.sum(self.X[:, :, None] *\
+                self.X[:, None, :] *\
+                (P / (1 + P) ** 2).reshape(-1, 1, 1),axis=0)
 
     def neg_log_l_grad(self, theta):
         return NotImplemented
