@@ -129,20 +129,20 @@ The details of the statistical analysis are written in the notebook, only the da
 
 
    | MANAG 	| SALES 	| CLER | SERV | PROF |
-   |-------|--------| -----| --| ----|---|
+   |-------|--------| -----| --| ----|
    |managerial |  sales worker   | clerical worker  | service worker | technical worker |
 
 - Categorical data about the industry
 
-| MANUF 	| CONSTR 	|
-|-------|--------|
-| manufacturing |   construction  |
+    | MANUF 	| CONSTR 	|
+    |-------|--------|
+    | manufacturing |   construction  |
 
 - Other Categorical data:
 
-| FE 	| MARR	| MARRFE| SOUTH | NONWH | HISP |
-|-------|--------| -----|
-| sex (1 if female) | marital status    | marital status of female  | geograpical data| non white | hispanique|
+     | FE 	| MARR	| MARRFE| SOUTH | NONWH | HISP |
+     |-------|--------| -----|---|---|---|
+     | sex (1 if female) | marital status    | marital status of female  | geograpical data| non white | hispanique|
 
 ## Author
 
