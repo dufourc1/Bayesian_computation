@@ -5,7 +5,7 @@ import time
 import datetime
 
 from src.helpers import update_progress
-from src.models import func_stats
+from src.maths import func_stats
 
 
 def Gibbs_sampling(model):

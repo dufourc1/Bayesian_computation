@@ -5,7 +5,7 @@ import time
 import datetime
 
 from src.helpers import update_progress
-from src.models import func_stats
+from src.maths import func_stats
 
 
 ## REVIEW: clean and rewrite the code if time, otherwise seems to work
@@ -142,9 +142,6 @@ def Langevin_MH(model, tau,verbose = True, verbose_gen = True, RETURN = False,**
     record_acceptance = np.zeros(max_iter)
 
     start = time.time()
-    if verbose:
-        print("Metropolis Hasting started at: {}".format(
-                    time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(start))))
 
     def log_qprop(X,Y,tau,grad ):
         R = -1/(4*tau)*np.linalg.norm(X-Y-tau*grad(Y))**2
@@ -154,7 +151,7 @@ def Langevin_MH(model, tau,verbose = True, verbose_gen = True, RETURN = False,**
     for k in range(max_iter):
         proposal = current + tau*model.log_posterior_grad(current)+\
                     sqrt(2*tau)*np.random.randn(size)
-        if proposal[0] > 0 or model.name == "Conditional model : Logistic,  Prior : gaussian":
+        if proposal[0] > 0 or model.name == "Conditional model : Multilogistic,  Prior : gaussian":
             ratio = model.log_posterior(proposal) -\
                     model.log_posterior(current)
             ratio = ratio - log_qprop(current,proposal,tau,model.log_posterior_grad)

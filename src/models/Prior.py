@@ -2,7 +2,7 @@ import autograd.numpy as np
 from autograd import grad
 from autograd import jacobian
 
-from .func_stats import *
+from src.maths.func_stats import *
 
 class Prior(object):
 

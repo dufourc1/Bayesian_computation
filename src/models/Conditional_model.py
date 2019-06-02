@@ -2,7 +2,7 @@ import autograd.numpy as anp
 from autograd import grad
 from autograd import jacobian
 
-from .func_stats import *
+from src.maths.func_stats import *
 
 
 class Conditional_model(object):
@@ -46,6 +46,9 @@ class Conditional_model(object):
         hessian = jacobian(self.neg_log_l)
         return hessian(theta)
 
+    def prediction(self,X_test,theta):
+        return NotImplemented
+
     def __call__(self, theta):
         return self.l(theta)
 
@@ -69,6 +72,9 @@ class Gaussian(Conditional_model):
         return np.sum(np.log(normal(self.y, np.dot(self.X,theta[1:]), theta[0],
                                     prod = False)))
 
+    def prediction(self,X_test,theta):
+        return np.dot(X_test,theta)
+
 
 class Student(Conditional_model):
     """Implementation of Linear model with student errors."""
@@ -83,6 +89,8 @@ class Student(Conditional_model):
     def log_l(self,theta):
         return np.sum(np.log(student(self.y-np.dot(self.X,theta[1:]),
                                 theta[0], prod = False)))
+    def prediction(self,X_test,theta):
+        return np.dot(X_test,theta)
 
 
 ## NOTE: not working, maybe check for negative values and compare with scikit
@@ -103,20 +111,53 @@ class Gamma(Conditional_model):
                             )
                     )
 
-class Logistic(Conditional_model):
+class Multilogistic(Conditional_model):
+    """ predict the 0 class if two classes
+
+    Parameters
+    ----------
+    X : type
+        Description of parameter `X`.
+    y : type
+        Description of parameter `y`.
+    number_classes : type
+        Description of parameter `number_classes`.
+    **kwargs : type
+        Description of parameter `**kwargs`.
+
+    Examples
+    -------
+    Examples should be written in doctest format, and
+    should illustrate how to use the function/class.
+    >>>
+
+    Attributes
+    ----------
+    name : type
+        Description of attribute `name`.
+    self,theta : type
+        Description of attribute `self,theta`.
+    number_classes
+
+    """
 
     def __init__(self,X,y, number_classes, **kwargs):
-        super(Logistic,self).__init__(X,y,**kwargs)
+        super(Multilogistic,self).__init__(X,y,**kwargs)
+        if number_classes >2:
+            raise NotImplementedError("only logistic regression for two classes is implemented for now")
         self.number_classes = number_classes
-        self.name = "Logistic"
+        self.name = "Multilogistic"
 
     def extract_proba(self,theta):
 
+        #reshaping data
+        dim = self.X.shape[1]
 
         #computing probabilities
         expo = np.exp(np.dot(self.X,theta))
         P = expo/(1+expo)
         return P
+
 
     def l(self,theta):
 
@@ -132,27 +173,43 @@ class Logistic(Conditional_model):
         #computing probabilities
         P = self.extract_proba(theta)
         #compute the log_likelihood in a satble manner
-        return np.sum(np.log(P**self.y))
+        return np.sum(self.y*np.log(P)+(1-self.y)*np.log(1-P))
 
 
+
+    ## TODO: Implement those if time for Multilogistic regression
+    # no only valid for classic logistic regression
 
     def log_l_grad(self,theta):
+        if self.number_classes > 2:
+            raise NotImplementedError("only implemented for logistic regression")
         P = self.extract_proba(theta)
         inter = (self.y - P)*self.X.T
         return np.sum(inter,axis = 1)
 
     def log_l_hes(self, theta):
+        if self.number_classes > 2:
+            raise NotImplementedError("only implemented for logistic regression")
         P = self.extract_proba(theta)
         return np.sum(self.X[:, :, None] *\
                 self.X[:, None, :] *\
                 (P / (1 + P) ** 2).reshape(-1, 1, 1),axis=0)
 
     def neg_log_l_grad(self, theta):
-        return NotImplemented
+        if self.number_classes > 2:
+            raise NotImplementedError("only implemented for logistic regression")
+        return -self.log_l_grad(theta)
 
     def neg_log_l_hes(self, theta):
-        return NotImplemented
+        if self.number_classes > 2:
+            raise NotImplementedError("only implemented for logistic regression")
+        return -self.log_l_hes(theta)
 
+    def predict(self,X_test,theta):
+        P = self.extract_proba(theta)
+        predicted = np.zeros_like(P)
+        predicted[P>=0.5]=1
+        return predicted
 
 
     def __repr__(self):

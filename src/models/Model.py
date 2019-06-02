@@ -85,6 +85,13 @@ class Model(object):
         inter = inter.T
         return inter
 
+    def predict(self,X_test):
+        prediction = {}
+        for name in self.results.keys():
+            prediction[name] = self.cond_model.predict(X_test,self.results[name])
+        return pd.DataFrame(prediction)
+
+
     def __call__(self):
         return self.view()
 
