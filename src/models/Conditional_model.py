@@ -93,26 +93,33 @@ class Student(Conditional_model):
         return np.dot(X_test,theta)
 
 
-## NOTE: not working, maybe check for negative values and compare with scikit
+# NOTE: not working, maybe check for negative values and compare with scikit
 class Gamma(Conditional_model):
     """Implementatio of the GLM using a gamma distribution and canonical
     link function """
 
     def __init__(self,X,y,**kwargs):
         super(Gamma,self).__init__(X,y,**kwargs)
+        if np.min(self.y)<= 0:
+            raise ValueError("response cannot be negative for gamma distr")
         self.name = "Gamma GLM"
+        self.nu = 4
 
     def l(self,theta):
-        return gamma_(self.y, alpha= 10., beta= np.dot(self.X,theta))
+        return gamma_(self.y, alpha= np.exp(self.X,theta), beta= self.nu)
 
     def log_l(self,theta):
-        return np.sum(np.log(gamma_(self.y, alpha= 10., beta= np.dot(self.X,theta),
+        return np.sum(np.log(gamma_(self.y, alpha= np.exp(self.X,theta),
+                                    beta= self.nu,
                                     prod = False)
                             )
                     )
 
+
+# REVIEW:generalize the Multilogistic model
+
 class Multilogistic(Conditional_model):
-    """ predict the 0 class if two classes
+    """ predict the 1 class if two classes
 
     Parameters
     ----------

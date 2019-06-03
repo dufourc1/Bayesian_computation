@@ -67,7 +67,7 @@ Contains the following classes:
     Conditional_model
 `cond_mod.log_l`
 `cond_mod.log_l_grad`
-`v.log_l_hessian
+`cond_mod.log_l_hessian`
 
 ### optimization
 
