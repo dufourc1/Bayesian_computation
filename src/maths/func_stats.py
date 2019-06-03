@@ -92,7 +92,7 @@ def exponential(theta,lambda_, prod = True):
         return individual
 
 
-
+# REVIEW: check the distribution and transform it with mean and variance
 def gamma_(theta,alpha,beta, prod = True):
     """ gamma distribution with parameter alpha, beta
 
