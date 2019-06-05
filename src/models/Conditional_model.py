@@ -93,7 +93,7 @@ class Student(Conditional_model):
         return np.dot(X_test,theta)
 
 
-# NOTE: not working, maybe check for negative values and compare with scikit
+# NOTE: unstable, maybe check for negative values and compare with scikit
 class Gamma(Conditional_model):
     """Implementatio of the GLM using a gamma distribution and canonical
     link function """
@@ -185,7 +185,7 @@ class Multilogistic(Conditional_model):
 
 
     ## TODO: Implement those if time for Multilogistic regression
-    # no only valid for classic logistic regression
+    # now only valid for classic logistic regression
 
     def log_l_grad(self,theta):
         if self.number_classes > 2:

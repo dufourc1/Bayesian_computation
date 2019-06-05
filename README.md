@@ -16,6 +16,7 @@ The following libraries were used for this project, with Python 3.6.8
     autograd (1.2)
     pandas   (0.24.2)
 
+Beware: at the time of writing this, there is a compatibility issue between autograd and scipy that can be easily fixed following [this issue](https://github.com/HIPS/autograd/issues/501) from the github page of autograd.
 
 Graphical:
 
@@ -82,7 +83,7 @@ Contains the following classes:
 
     stochastic_gd (notImplemented)
 
-    newton_gd (notImplemented)
+    newton_gd (unstable)
 
 
 
@@ -90,13 +91,17 @@ Contains the following classes:
 
   Implementation of various approximation techniques:
 
-    GVA
+  these methods take as argument a model and return and approximation of its normalized posterior
+
+    GVA (unstable)
 
     laplace_approx
 
 ### sampling
 
-  Implementation of the sampling routines
+  Implementation of the sampling routines:
+
+  these methods take as argument a model and return samples from its unormalized posterior
 
     importance_sampling
 

@@ -10,6 +10,36 @@ import pandas as pd
 
 
 class Model(object):
+    """Short summary.
+
+    Parameters
+    ----------
+    Prior_create : constructor for the class Prior
+    cond_model_create :  constructor for the class Conditional_model
+    **kwargs :
+        Parameter needed to initialize the prior, the conditional model
+        need  also to have the data and the response
+        the parameter "additional_param" is needed if the model has some parameter
+        with a prior else than the main ones (like a parameter for the noise)
+
+    Examples
+    -------
+    >>> model_gaussian = Model.Model(Prior.Gaussian_exp_prior,
+                                    Conditional_model.Gaussian,
+                                    Prior = [0,3,2],
+                                    data = X,
+                                    response = Y,
+                                    additional_param = 1)
+
+
+    Attributes
+    ----------
+    data : numpy ndarray
+        regressors
+    response : numpy ndarray
+        response to model
+
+    """
 
     def __init__(self, Prior_create, cond_model_create , **kwargs):
 
@@ -75,6 +105,7 @@ class Model(object):
         return -self.log_posterior_hessian(theta)
 
     def view(self):
+        '''print the estimates already computed'''
         if len(self.results)== 0:
             return "no results yet"
         inter = pd.DataFrame(self.results).T
@@ -86,6 +117,8 @@ class Model(object):
         return inter
 
     def predict(self,X_test):
+        '''predict based on the conditional model
+        for all the estimates already computed'''
         prediction = {}
         for name in self.results.keys():
             prediction[name] = self.cond_model.predict(X_test,self.results[name])

@@ -79,6 +79,7 @@ def line_search_gd(model, lambda_, x0, alpha = 0.2, beta = 0.5, max_iter = 20, e
         #security measure
         j= 0
 
+        #acceptance criterion
         while f(candidate) > f(old)-l*alpha*np.linalg.norm(gradient)**2:
             l *= beta
             candidate = old-l*gradient
@@ -158,7 +159,7 @@ def Wolfe_cond_gd(model, lambda_0 = None, initial = None, max_iter = 10,
 def newton_gd(model,initial = None, max_iter = 10,
                 trace = False, RETURN = False):
 
-    raise RuntimeError("well have to fix it but don't know how")
+    raise Warning("unstable method, should be fixed if time")
     fun = model.neg_log_posterior
     grad_fun = model.neg_log_posterior_grad
     hes_fun = model.neg_log_posterior_hessian
