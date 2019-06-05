@@ -93,7 +93,7 @@ Contains the following classes:
 
   these methods take as argument a model and return and approximation of its normalized posterior
 
-    GVA (unstable)
+    GVA (not entirely checked for errors)
 
     laplace_approx
 

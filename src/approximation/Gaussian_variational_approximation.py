@@ -1,6 +1,7 @@
-## REVIEW: warning unstable,svd does not converge in high dimensions
 """
-unstable version of GVA
+GVA implementation
+should be used with all parameters in R (use inverse variance parametrization
+if needed)
 """
 
 import autograd.numpy as np
