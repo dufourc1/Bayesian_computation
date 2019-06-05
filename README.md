@@ -16,7 +16,7 @@ The following libraries were used for this project, with Python 3.6.8
     autograd (1.2)
     pandas   (0.24.2)
 
-Beware: at the time of writing this, there is a compatibility issue between autograd and scipy that can be easily fixed following [this issue](https://github.com/HIPS/autograd/issues/501) from the github page of autograd.
+Beware: at the time of writing, there is a compatibility issue between autograd and scipy that can be easily fixed following [this issue](https://github.com/HIPS/autograd/issues/501) from the github page of autograd.
 
 Graphical:
 
