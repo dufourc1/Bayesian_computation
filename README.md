@@ -61,14 +61,30 @@ Contains the following classes:
 `model.log_posterior_hessian`
 
     Prior
+         -Gaussian_exp_prior(Prior) 
+                 Implementation of the gaussian prior for the parameters beta and the
+                exponential prior for the sigma: beta ~ N(mean,std**2), sigma ~ Exp(lamdba)
+         -Gaussian_gamma_prior(Prior)
+                 Implementation of the Student prior for the parameters beta and the
+                 gamma prior for the df of the student noise: beta ~ N(mean,std**2), df ~ Gamma(alpha,beta)
+         -Gaussian_prior(Prior):
+                 Implementation of the vanilla gaussian prior: theta ~ N(mean,std**2)
+         
 `prior.log_prior`
 `prior.log_prior_grad`
 `prior.log_prior_hessian`
 
     Conditional_model
+        - Gaussian linear model
+        - Student linear model
+        - Logistic model 
+        - Gamma model (not checked for errors)
+       
 `cond_mod.log_l`
 `cond_mod.log_l_grad`
 `cond_mod.log_l_hessian`
+
+See this [issue](https://github.com/dufourc1/Bayesian_computation/issues/2) for the gamma model
 
 ### optimization
 
@@ -84,7 +100,8 @@ Contains the following classes:
     stochastic_gd (notImplemented)
 
     newton_gd (unstable)
-
+    
+See this  [issue](https://github.com/dufourc1/Bayesian_computation/issues/4)
 
 
 ### approximation
@@ -93,9 +110,11 @@ Contains the following classes:
 
   these methods take as argument a model and return and approximation of its normalized posterior
 
-    GVA (not entirely checked for errors)
-
+    GVA (not entirely checked for errors) 
+    
     laplace_approx
+ See [issue](https://github.com/dufourc1/Bayesian_computation/issues/3)
+
 
 ### sampling
 
