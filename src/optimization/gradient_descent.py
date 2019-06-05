@@ -33,6 +33,7 @@ def vanilla_gd(model, max_iter = 10, step_size = 1e-4, initial = None, trace = F
     start = time.time()
     theta = initial
     for i in range(max_iter):
+        #update and append
         theta = theta - step_size*grad_fun(theta)
         trace_theta.append(theta)
         trace_energy.append(fun(theta))
@@ -72,6 +73,7 @@ def line_search_gd(model, lambda_, x0, alpha = 0.2, beta = 0.5, max_iter = 20, e
 
         candidate = old-l*gradient
 
+        #check for early convergence criterion
         if np.linalg.norm(candidate-old)< epsilon*l:
             update_progress(1,"converged early at iteration {}".format(i+1))
             break
@@ -115,6 +117,7 @@ def Wolfe_cond_gd(model, lambda_0 = None, initial = None, max_iter = 10,
     if lambda_0 is None:
         lambda_0 = 1e-3
 
+    # trace for vizualization purpose
     if trace:
         trace_theta = [initial]
         trace_lambdas = [lambda_0]
@@ -126,6 +129,7 @@ def Wolfe_cond_gd(model, lambda_0 = None, initial = None, max_iter = 10,
     start = time.time()
 
     for i in range(max_iter):
+        #check wolfe condition
         proposal = theta-step_size*model.neg_log_posterior_grad(theta)
         checks = check_wolfe_conditions(model.neg_log_posterior,
                                         model.neg_log_posterior_grad,

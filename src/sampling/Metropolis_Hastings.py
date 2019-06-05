@@ -153,20 +153,31 @@ def Langevin_MH(model, tau,verbose = True, verbose_gen = True, RETURN = False,**
 
 
     for k in range(max_iter):
+        #compute the proposal based on the Langevin update
         proposal = current + step_size*(tau*model.log_posterior_grad(current)+\
                      sqrt(2*tau)*np.random.randn(size))
-        if proposal[0] > 0 or model.name == "Conditional model : Multilogistic,  Prior : gaussian":
+
+        #dirty trick to avoid proposition for negative variance
+        # REVIEW: code it in distribution, but beware it could break down
+        # other computation 
+        if proposal[0] > 0 or model.name\
+                    == "Conditional model : Multilogistic,  Prior : gaussian":
+            #comppute acceptance ratio
             ratio = model.log_posterior(proposal) -\
                     model.log_posterior(current)
-            ratio = ratio - log_qprop(current,proposal,tau,model.log_posterior_grad)
+            ratio = ratio - log_qprop(current,proposal,
+                                    tau,model.log_posterior_grad)
             ratio += log_qprop(proposal,current,tau,model.log_posterior_grad)
             ratio = np.exp(ratio)
             threshold = np.random.random()
         else:
+            #otherwise since the proposed value is non valid
+            #we won't accept it
             ratio = 0
         if ratio > threshold:
             current = proposal
 
+        #record the new samples
         samples[k,:] = current
         record_acceptance[k] = (ratio > threshold)
 
@@ -182,7 +193,8 @@ def Langevin_MH(model, tau,verbose = True, verbose_gen = True, RETURN = False,**
     model.results["MH_Langevin_median"] = np.median(samples[burning:],axis = 0)
 
     if verbose:
-        print(" Acceptance rate : {:2.1%}  (advised values between 10% and 50%)"\
+        print(" Acceptance rate : {:2.1%} \
+                (advised values between 10% and 50%)"\
                     .format(np.mean(record_acceptance)))
 
     end = time.time()
