@@ -93,7 +93,7 @@ class Student(Conditional_model):
         return np.dot(X_test,theta)
 
 
-# NOTE: unstable, maybe check for negative values and compare with scikit
+# NOTE: compare with scikit
 class Gamma(Conditional_model):
     """Implementatio of the GLM using a gamma distribution and canonical
     link function """
