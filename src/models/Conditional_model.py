@@ -64,15 +64,23 @@ class Gaussian(Conditional_model):
         self.name = "gaussian"
 
 
+    #likelihood for both new data point and prerecorded data
     def l(self,theta):
         return normal(self.y,np.dot(self.X,theta[1:]),theta[0])
 
-    def log_l(self,theta):
+    def l_new(self,theta,y,X):
+        return normal(y,np.dot(X,theta[1:]),theta[0])
 
+    def log_l(self,theta):
         return np.sum(np.log(normal(self.y, np.dot(self.X,theta[1:]), theta[0],
                                     prod = False)))
 
+    def log_l_new(self,theta,y,X):
+        return np.sum(np.log(normal(y, np.dot(X,theta[1:]), theta[0],
+                                    prod = False)))
+
     def prediction(self,X_test,theta):
+        ## REVIEW: wrong !!!!
         return np.dot(X_test,theta)
 
 
@@ -83,13 +91,23 @@ class Student(Conditional_model):
         super(Student,self).__init__(X,y,**kwargs)
         self.name = "student"
 
-    def l(self,theta):
-        return student(self.y-np.dot(self.X,theta[1:]), theta[0])
+    def l(self, theta, y = None,X = None):
+        if y is None:
+            y = self.y
+        if X is None:
+            X = self.X
+        return student(y-np.dot(X,theta[1:]), theta[0])
 
-    def log_l(self,theta):
-        return np.sum(np.log(student(self.y-np.dot(self.X,theta[1:]),
+    def log_l(self,theta, y = None,X = None):
+        if y is None:
+            y = self.y
+        if X is None:
+            X = self.X
+        return np.sum(np.log(student(y-np.dot(X,theta[1:]),
                                 theta[0], prod = False)))
+
     def prediction(self,X_test,theta):
+        ## REVIEW: wrong !!!!
         return np.dot(X_test,theta)
 
 

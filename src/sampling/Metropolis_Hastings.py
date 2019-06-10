@@ -148,6 +148,7 @@ def Langevin_MH(model, tau,verbose = True, verbose_gen = True, RETURN = False,**
     start = time.time()
 
     def log_qprop(X,Y,tau,grad ):
+        # probability to go to X given Y
         R = -1/(4*tau)*np.linalg.norm(X-Y-tau*grad(Y))**2
         return R
 
@@ -158,7 +159,7 @@ def Langevin_MH(model, tau,verbose = True, verbose_gen = True, RETURN = False,**
                      sqrt(2*tau)*np.random.randn(size))
 
         #dirty trick to avoid proposition for negative variance
-        # REVIEW: code it in distribution, but beware it could break down other computation 
+        # REVIEW: code it in distribution, but beware it could break down other computation
         if proposal[0] > 0 or model.name\
                     == "Conditional model : Multilogistic,  Prior : gaussian":
             #comppute acceptance ratio

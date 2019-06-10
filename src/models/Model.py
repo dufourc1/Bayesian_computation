@@ -116,9 +116,10 @@ class Model(object):
         inter = inter.T
         return inter
 
-    def predict(self,X_test):
-        '''predict based on the conditional model
-        for all the estimates already computed'''
+    def predict(self,X_test, method = "Laplace"):
+        # REVIEW: add to use Laplace to marginalize theta
+        # NOTE: maybe add automatic computation of MAE and store it 
+        '''predict based on the conditional model using MAP estimate'''
         prediction = {}
         for name in self.results.keys():
             prediction[name] = self.cond_model.predict(X_test,self.results[name])
