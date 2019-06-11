@@ -113,6 +113,8 @@ class Model(object):
         inter = pd.DataFrame(self.results).T
         if self.size > len(self.names_pred):
             inter.columns = np.insert(self.names_pred,0,"error prior")
+        if self.cond_model.name == "Multilogistic":
+            inter.columns = np.insert(self.names_pred,0,"intercept")
         else:
             inter.columns = self.names_pred
         inter = inter.T
@@ -122,10 +124,9 @@ class Model(object):
         # NOTE: maybe add automatic computation of MAE and store it
         '''predict based on the conditional model using MAP estimate'''
 
-        if method == "MAP":
-            prediction = {}
-            for name in self.results.keys():
-                prediction[name] = self.cond_model.prediction(X_test,self.results[name])
+        prediction = {}
+        for name in self.results.keys():
+            prediction[name] = self.cond_model.prediction(X_test,self.results[name])
 
         return pd.DataFrame(prediction)
 

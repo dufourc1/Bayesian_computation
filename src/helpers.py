@@ -87,6 +87,16 @@ def visualisation(df,model):
                            zeroline = False
                    )
                  )
+    if model.cond_model.name == "Multilogistic":
+        layout = dict(title = 'Result comparison for model    {}'.format(model.name),
+                  yaxis = dict(zeroline = True),
+                   xaxis = go.layout.XAxis(
+                            tickmode = 'array',
+                            tickvals = np.arange(0,17),
+                            ticktext = np.insert(predictors_name,0,"intercept"),
+                           zeroline = False
+                   )
+                 )
 
     fig = dict(data=trace1, layout=layout)
     py.iplot(fig)
