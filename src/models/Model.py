@@ -8,7 +8,6 @@ import pandas as pd
 import numpy
 
 
-from src.optimization.gradient_descent import gd_predict
 from math import pi
 
 
