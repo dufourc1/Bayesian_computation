@@ -5,9 +5,11 @@ General abstract class of a model, contains a prior and a conditional distributi
 import autograd.numpy as np
 from autograd import grad,jacobian
 import pandas as pd
+import numpy
 
 
 from src.optimization.gradient_descent import gd_predict
+from math import pi
 
 
 class Model(object):
@@ -117,33 +119,14 @@ class Model(object):
         inter = inter.T
         return inter
 
-    def predict(self,X_test, method = "MAP"):
+    def predict(self,X_test):
         # NOTE: maybe add automatic computation of MAE and store it
         '''predict based on the conditional model using MAP estimate'''
 
         if method == "MAP":
             prediction = {}
             for name in self.results.keys():
-                prediction[name] = self.cond_model.predict(X_test,self.results[name])
-
-        else :
-            #we compute the density of the prediction using metropolis hastings
-
-            def fun(theta,y):
-                inter = self.cond_model.log_l(theta,y,X_test)
-                inter = inter +  self.log_posterior(theta)
-                return inter
-            grad_fun = grad(fun)
-
-            def predictive_density(y):
-                theta_star = gd_predict(fun,grad_fun,0.5*np.ones(self.size),1e-4,200)
-                curvature = self..neg_log_posterior_hessian(theta_star)
-                curvature += self.cond_model.neg_log_l_hes(theta_star,y,X_test)
-                W,_ = numpy.linalg.eig(curvature)
-                det = numpy.prod(W)
-                return np.exp(fun(theta_star,y))
-
-
+                prediction[name] = self.cond_model.prediction(X_test,self.results[name])
 
         return pd.DataFrame(prediction)
 

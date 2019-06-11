@@ -108,7 +108,7 @@ class Gaussian(Conditional_model):
 
     def prediction(self,X_test,theta):
         # only valid under certain specific assumptions
-        return np.dot(X_test,theta)
+        return np.dot(X_test,theta[1:])
 
 
 class Student(Conditional_model):
@@ -135,7 +135,7 @@ class Student(Conditional_model):
 
     def prediction(self,X_test,theta):
         # only valid under certain specific assumptions
-        return np.dot(X_test,theta)
+        return np.dot(X_test,theta[1:])
 
 
 # NOTE: compare with scikit
@@ -257,7 +257,7 @@ class Multilogistic(Conditional_model):
             raise NotImplementedError("only implemented for logistic regression")
         return -self.log_l_hes(theta)
 
-    def predict(self,X_test,theta):
+    def prediction(self,X_test,theta):
         # only valid under certain specific assumptions
         P = self.extract_proba(theta)
         predicted = np.zeros_like(P)
