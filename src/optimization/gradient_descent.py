@@ -204,6 +204,14 @@ def stochastic_gd(model):
     return NotImplemented
 
 
+def gd_predict(fun,grad_fun,initial,step_size,iter):
+
+    for i in range(iter):
+        dir = grad_fun(initial)
+        initial = initial - step_size*dir
+        if np.linalg.norm(dir) < 1e-5:
+            break
+    return initial
 
 
 ################################################################################

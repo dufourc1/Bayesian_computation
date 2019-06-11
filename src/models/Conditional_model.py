@@ -14,43 +14,67 @@ class Conditional_model(object):
         self.name = "Super Class"
 
 
-    def l(self, theta):
-        # likelihood
+    def l(self,theta,y = None, X= None):
+        #log_likelihood
         return NotImplemented
 
-    def log_l(self, theta):
+    def log_l(self, theta,y = None, X= None):
         # log likelihood by default
-        return np.log(self.l(theta))
+        return np.log(self.l(theta,y,X))
 
-    def neg_log_l(self, theta):
+    def neg_log_l(self, theta,y = None, X= None):
         # negative log likelihood
-        return - self.log_l(theta)
+        if y is None:
+            y = self.y
+        if X is None:
+            X = self.X
+        return - self.log_l(theta,y,X)
 
-    def log_l_grad(self, theta):
+    def log_l_grad(self, theta,y = None, X= None):
         # gradient of log likelihood
+        if y is None:
+            y = self.y
+        if X is None:
+            X = self.X
         grad_fun = grad(self.log_l)
-        return grad_fun(theta)
+        return grad_fun(theta,y,X)
 
-    def log_l_hes(self, theta):
+    def log_l_hes(self, theta,y = None, X= None):
         # hessian of log likelihood
+        if y is None:
+            y = self.y
+        if X is None:
+            X = self.X
         hessian = jacobian(self.log_l)
-        return hessian(theta)
+        return hessian(theta,y,X)
 
-    def neg_log_l_grad(self, theta):
+    def neg_log_l_grad(self, theta,y = None, X= None):
         # gradient of negative log likelihood
+        if y is None:
+            y = self.y
+        if X is None:
+            X = self.X
         grad_fun = grad(self.neg_log_l)
-        return grad_fun(theta)
+        return grad_fun(theta,y,X)
 
-    def neg_log_l_hes(self, theta):
+    def neg_log_l_hes(self, theta,y = None, X= None):
         # hessian of negative log likelihood
+        if y is None:
+            y = self.y
+        if X is None:
+            X = self.X
         hessian = jacobian(self.neg_log_l)
-        return hessian(theta)
+        return hessian(theta,y,X)
 
     def prediction(self,X_test,theta):
         return NotImplemented
 
-    def __call__(self, theta):
-        return self.l(theta)
+    def __call__(self, theta,y = None, X= None):
+        if y is None:
+            y = self.y
+        if X is None:
+            X = self.X
+        return self.l(theta,y,X)
 
     def __repr__(self):
         return "conditional model: "+self.name
@@ -64,23 +88,26 @@ class Gaussian(Conditional_model):
         self.name = "gaussian"
 
 
-    #likelihood for both new data point and prerecorded data
-    def l(self,theta):
-        return normal(self.y,np.dot(self.X,theta[1:]),theta[0])
-
-    def l_new(self,theta,y,X):
+    #likelihood
+    def l(self,theta,y = None, X= None):
+        if y is None:
+            y = self.y
+        if X is None:
+            X = self.X
         return normal(y,np.dot(X,theta[1:]),theta[0])
 
-    def log_l(self,theta):
-        return np.sum(np.log(normal(self.y, np.dot(self.X,theta[1:]), theta[0],
-                                    prod = False)))
 
-    def log_l_new(self,theta,y,X):
+    def log_l(self,theta, y = None, X = None):
+        if y is None:
+            y = self.y
+        if X is None:
+            X = self.X
         return np.sum(np.log(normal(y, np.dot(X,theta[1:]), theta[0],
                                     prod = False)))
 
+
     def prediction(self,X_test,theta):
-        ## REVIEW: wrong !!!!
+        # only valid under certain specific assumptions
         return np.dot(X_test,theta)
 
 
@@ -107,7 +134,7 @@ class Student(Conditional_model):
                                 theta[0], prod = False)))
 
     def prediction(self,X_test,theta):
-        ## REVIEW: wrong !!!!
+        # only valid under certain specific assumptions
         return np.dot(X_test,theta)
 
 
@@ -231,6 +258,7 @@ class Multilogistic(Conditional_model):
         return -self.log_l_hes(theta)
 
     def predict(self,X_test,theta):
+        # only valid under certain specific assumptions
         P = self.extract_proba(theta)
         predicted = np.zeros_like(P)
         predicted[P>=0.5]=1
