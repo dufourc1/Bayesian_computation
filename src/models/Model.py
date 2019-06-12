@@ -63,6 +63,7 @@ class Model(object):
         self.size = self.data.shape[1]
         if "additional_param" in kwargs.keys():
             self.size += kwargs["additional_param"]
+            self.additional_param = kwargs["additional_param"]
 
         if "predictors_names" in kwargs.keys():
             self.names_pred = kwargs["predictors_name"]
@@ -79,6 +80,7 @@ class Model(object):
         self.name = "Conditional model : {},  Prior : {}".format(
                             self.cond_model.name,self.prior.name)
         self.results = {}
+        self.time = {}
 
 
     def posterior(self,theta):
@@ -109,11 +111,14 @@ class Model(object):
     def view(self):
         '''print the estimates already computed'''
         if len(self.results)== 0:
-            return "no results yet"
-        inter = pd.DataFrame(self.results).T
+            raise ValueError("no results yet")
+        inter = pd.DataFrame()
+        for key,elt in self.results.items():
+            inter[key] = elt[0]
+        inter = inter.T
         if self.size > len(self.names_pred):
             inter.columns = np.insert(self.names_pred,0,"error prior")
-        if self.cond_model.name == "Multilogistic":
+        elif self.cond_model.name == "Multilogistic":
             inter.columns = np.insert(self.names_pred,0,"intercept")
         else:
             inter.columns = self.names_pred
@@ -126,7 +131,7 @@ class Model(object):
 
         prediction = {}
         for name in self.results.keys():
-            prediction[name] = self.cond_model.prediction(X_test,self.results[name])
+            prediction[name] = self.cond_model.prediction(X_test,self.results[name][0])
 
         return pd.DataFrame(prediction)
 

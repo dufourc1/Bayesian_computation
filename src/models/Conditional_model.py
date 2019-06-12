@@ -200,13 +200,15 @@ class Multilogistic(Conditional_model):
         self.number_classes = number_classes
         self.name = "Multilogistic"
 
-    def extract_proba(self,theta):
+    def extract_proba(self,theta, X = None):
 
+        if X is None:
+            X = self.X
         #reshaping data
-        dim = self.X.shape[1]
+        dim = X.shape[1]
 
         #computing probabilities
-        expo = np.exp(np.dot(self.X,theta))
+        expo = np.exp(np.dot(X,theta))
         P = expo/(1+expo)
         return P
 
@@ -259,7 +261,7 @@ class Multilogistic(Conditional_model):
 
     def prediction(self,X_test,theta):
         # only valid under certain specific assumptions
-        P = self.extract_proba(theta)
+        P = self.extract_proba(theta,X_test)
         predicted = np.zeros_like(P)
         predicted[P>=0.5]=1
         return predicted

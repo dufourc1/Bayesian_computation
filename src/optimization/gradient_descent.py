@@ -54,13 +54,16 @@ def vanilla_gd(model, max_iter = 10, step_size = 1e-4, initial = None, trace = F
         return theta
 
 
-def line_search_gd(model, lambda_, x0, alpha = 0.2, beta = 0.5, max_iter = 20, epsilon = 1e-4,
-                    trace = False, RETURN = False):
+def line_search_gd(model, x0 = None, lambda_ = 1e-4,  alpha = 0.2, beta = 0.5, max_iter = 20, epsilon = 1e-4,
+                    trace = False, RETURN = False, save = True):
 
 
 
     f = model.neg_log_posterior
     df = model.neg_log_posterior_grad
+    if x0 is None:
+        x0 = np.random.randn(model.size)
+        x0[0:2] = 1
     values = [x0]
     energies = [f(x0)]
 
@@ -100,7 +103,8 @@ def line_search_gd(model, lambda_, x0, alpha = 0.2, beta = 0.5, max_iter = 20, e
     end = time.time()
     print("  duration: {}".format(str(datetime.timedelta(
                                                 seconds= round(end-start)))))
-    model.results["line_search_gd"] = old
+    if save:
+        model.results["line_search_gd"] = old
 
     if trace:
         return values,energies
@@ -109,7 +113,7 @@ def line_search_gd(model, lambda_, x0, alpha = 0.2, beta = 0.5, max_iter = 20, e
 
 
 def Wolfe_cond_gd(model, lambda_0 = None, initial = None, max_iter = 10,
-                trace = False, RETURN = False,
+                trace = False, RETURN = False, save = True,
                 c1= 1e-4, c2= 0.9, beta_C1= 0.9, beta_C2 = 1.1):
 
     if initial is None:
@@ -152,8 +156,8 @@ def Wolfe_cond_gd(model, lambda_0 = None, initial = None, max_iter = 10,
     end = time.time()
     print("  duration: {}".format(str(datetime.timedelta(
                                                 seconds= round(end-start)))))
-
-    model.results["Wolfe_cond_gd"] = theta
+    if save:
+        model.results["Wolfe_cond_gd"] = theta
 
     if RETURN:
         return theta
@@ -212,10 +216,11 @@ def stochastic_gd(model):
 #check Wolfe condition for minimization
 def check_wolfe_conditions(fun, grad_fun, theta,lambda_, c1, c2):
 
-    proposal = theta-lambda_*grad_fun(theta)
-    norm_grad = np.linalg.norm(grad_fun(theta))**2
+    dir = grad_fun(theta)
+    proposal = theta-lambda_*dir
+    norm_grad = np.linalg.norm(dir)**2
     C1 = fun(proposal)-fun(theta) - c1*lambda_*norm_grad
-    C2 = -np.dot(grad_fun(theta),grad_fun(proposal)) + c2*norm_grad
+    C2 = -np.dot(dir,grad_fun(proposal)) + c2*norm_grad
 
     return (C1 <= 0, C2 <= 0)
 
