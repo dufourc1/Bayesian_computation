@@ -138,9 +138,9 @@ class Student(Conditional_model):
         return np.dot(X_test,theta[1:])
 
 
-# NOTE: compare with scikit
+# REVIEW: not finished
 class Gamma(Conditional_model):
-    """Implementatio of the GLM using a gamma distribution and canonical
+    """Implementation of the GLM using a gamma distribution and canonical
     link function """
 
     def __init__(self,X,y,**kwargs):
@@ -161,7 +161,7 @@ class Gamma(Conditional_model):
                     )
 
 
-# REVIEW:generalize the Multilogistic model
+#  TODO: :generalize the Multilogistic model
 
 class Multilogistic(Conditional_model):
     """ predict the 1 class if two classes

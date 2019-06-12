@@ -22,7 +22,7 @@ class Model(object):
         Parameter needed to initialize the prior, the conditional model
         need  also to have the data and the response
         the parameter "additional_param" is needed if the model has some parameter
-        with a prior else than the main ones (like a parameter for the noise)
+        with a prior else than the main ones (parameter(s) for the noise)
 
     Examples
     -------

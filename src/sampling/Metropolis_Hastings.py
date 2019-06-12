@@ -211,6 +211,10 @@ def Langevin_MH(model, tau,verbose = True, verbose_gen = True, RETURN = False,**
 
 
 def MH_whithin_Gibbs(model, verbose = False, verbose_gen = True, RETURN = False,**kwargs):
+    ''' Metropolis within Gibbs, update a batch of parameters at the same time,
+    not necessarly the all vector
+    use the same input as MH_vanilla
+    '''
 
         #get the size of the parameter to simulate
         size = model.size

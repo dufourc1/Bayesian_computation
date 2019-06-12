@@ -41,8 +41,7 @@ def vanilla_gd(model, max_iter = 10, step_size = 1e-4, initial = None, trace = F
         if i%5 == 0 or i == max_iter-1:
             update_progress((i+1)/max_iter)
     end = time.time()
-    print("  duration: {}".format(str(datetime.timedelta(
-                                                seconds= round(end-start)))))
+    print("  duration: {}".format(str(datetime.timedelta(seconds= round(end-start)))))
 
     if save:
         model.results["gd"] = theta
