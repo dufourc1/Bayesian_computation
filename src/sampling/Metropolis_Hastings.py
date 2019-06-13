@@ -216,94 +216,93 @@ def MH_whithin_Gibbs(model, verbose = False, verbose_gen = True, RETURN = False,
     use the same input as MH_vanilla
     '''
 
-        #get the size of the parameter to simulate
-        size = model.size
+    #get the size of the parameter to simulate
+    size = model.size
 
-        #initial point
-        if "initial" in kwargs.keys():
-            current = np.array(kwargs["initial"])
-        else:
-            current = np.ones(size) #np.random.randn(size)
+    #initial point
+    if "initial" in kwargs.keys():
+        current = np.array(kwargs["initial"])
+    else:
+        current = np.ones(size) #np.random.randn(size)
 
-        #step size
-        if 'step_size' in kwargs.keys():
-            step_size = kwargs["step_size"]
-        else:
-            step_size = 0.04
-            print("default step size selected : {}".format(step_size))
+    #step size
+    if 'step_size' in kwargs.keys():
+        step_size = kwargs["step_size"]
+    else:
+        step_size = 0.04
+        print("default step size selected : {}".format(step_size))
 
-        #number of iterations
-        if 'max_iter' in kwargs.keys():
-            max_iter = kwargs["max_iter"]
-        else:
-            max_iter = 10
+    #number of iterations
+    if 'max_iter' in kwargs.keys():
+        max_iter = kwargs["max_iter"]
+    else:
+        max_iter = 10
 
-        if 'batch' in kwargs.keys():
-            batch = kwargs["batch"]
-        else:
-            batch = 5
-            print("default batch is {}".format(batch))
+    if 'batch' in kwargs.keys():
+        batch = kwargs["batch"]
+    else:
+        batch = 5
+        print("default batch is {}".format(batch))
 
 
-        #create empty containers
-        samples = np.zeros([max_iter, size])
-        record_acceptance = np.zeros(max_iter)
+    #create empty containers
+    samples = np.zeros([max_iter, size])
+    record_acceptance = np.zeros(max_iter)
 
-        #performance measures
-        start = time.time()
+    #performance measures
+    start = time.time()
 
-        #actual MCMC simulation
-        for k in range(max_iter):
+    #actual MCMC simulation
+    for k in range(max_iter):
 
-            #choose an index to update
-            indices = np.random.randint(len(current),size = batch)
+        #choose an index to update
+        indices = np.random.randint(len(current),size = batch)
+        #update the sample accordingly
+        step = np.zeros_like(current)
+        for index in indices:
+            step[index] = np.random.randn()
 
-            #update the sample accordingly
-            step = np.zeros_like(current)
-            for index in indices:
-                step[index] = np.random.randn()
+        proposal = current + step_size*step
 
-            proposal = current + step_size*step
+        #compute its acceptance ratio
+        ratio = np.exp(model.log_posterior(proposal) \
+                        - model.log_posterior(current))
 
-            #compute its acceptance ratio
-            ratio = np.exp(model.log_posterior(proposal) \
-                            - model.log_posterior(current))
+        #check if accepted
+        threshold = np.random.random()
+        if ratio > threshold:
+            current = proposal
 
-            #check if accepted
-            threshold = np.random.random()
-            if ratio > threshold:
-                current = proposal
+        #update samples an acceptance accordingly
+        samples[k,:] = current
+        record_acceptance[k] = (ratio > threshold)
 
-            #update samples an acceptance accordingly
-            samples[k,:] = current
-            record_acceptance[k] = (ratio > threshold)
+        if verbose_gen == True:
+            if k%5 == 0 or k == max_iter-1:
+                update_progress((k+1)/max_iter)
 
-            if verbose_gen == True:
-                if k%5 == 0 or k == max_iter-1:
-                    update_progress((k+1)/max_iter)
+    # saving the data
+    #defining the burnin parameter
+    if "burning" in kwargs.keys():
+        burning = kwargs["burning"]
+    else:
+        burning = int(max_iter/10)
 
-        # saving the data
-        #defining the burnin parameter
-        if "burning" in kwargs.keys():
-            burning = kwargs["burning"]
-        else:
-            burning = int(max_iter/10)
+    #saving the estimates in the model
+    ## NOTE: could be generalized if time
+    covariance = np.cov(samples[burning:].T)
+    model.results["MH_Gibbs_mean"] = [np.mean(samples[burning:],axis = 0),covariance]
 
-        #saving the estimates in the model
-        ## NOTE: could be generalized if time
-        covariance = np.cov(samples[burning:].T)
-        model.results["MH_Gibbs_mean"] = [np.mean(samples[burning:],axis = 0),covariance]
+    end = time.time()
+    if verbose:
+        print(" Acceptance rate : {:2.1%}  (advised values between 10% and 50%)"\
+                    .format(np.mean(record_acceptance)))
+        print("  duration: {}".format(str(datetime.timedelta(
+                                                    seconds= round(end-start)))))
 
-        end = time.time()
-        if verbose:
-            print(" Acceptance rate : {:2.1%}  (advised values between 10% and 50%)"\
-                        .format(np.mean(record_acceptance)))
-            print("  duration: {}".format(str(datetime.timedelta(
-                                                        seconds= round(end-start)))))
-
-        model.time["MH_Gibbs"] = [end-start,max_iter]
-        if RETURN:
-            if "acc" in kwargs.keys():
-                if kwargs["acc"] == True:
-                    return samples, np.mean(record_acceptance)
-            return samples
+    model.time["MH_Gibbs"] = [end-start,max_iter]
+    if RETURN:
+        if "acc" in kwargs.keys():
+            if kwargs["acc"] == True:
+                return samples, np.mean(record_acceptance)
+        return samples

@@ -38,6 +38,11 @@ def vanilla_gd(model, max_iter = 10, step_size = 1e-4, initial = None, trace = F
         trace_theta.append(theta)
         trace_energy.append(fun(theta))
 
+        #convergence check
+        if abs(fun(theta)-fun(trace_theta[-2]))< 1e-6:
+            update_progress(1,message= "early convergence at {} iterations".format(i))
+            break
+
         if i%5 == 0 or i == max_iter-1:
             update_progress((i+1)/max_iter)
     end = time.time()
@@ -50,7 +55,7 @@ def vanilla_gd(model, max_iter = 10, step_size = 1e-4, initial = None, trace = F
     if trace :
         return trace_theta,trace_energy
     elif RETURN:
-        return theta
+        return theta,i+1
 
 
 def line_search_gd(model, x0 = None, lambda_ = 1e-4,  alpha = 0.2, beta = 0.5, max_iter = 20, epsilon = 1e-4,
@@ -75,10 +80,6 @@ def line_search_gd(model, x0 = None, lambda_ = 1e-4,  alpha = 0.2, beta = 0.5, m
 
         candidate = old-l*gradient
 
-        #check for early convergence criterion
-        if np.linalg.norm(candidate-old)< epsilon*l:
-            update_progress(1,"converged early at iteration {}".format(i+1))
-            break
 
         #security measure
         j= 0
@@ -92,8 +93,14 @@ def line_search_gd(model, x0 = None, lambda_ = 1e-4,  alpha = 0.2, beta = 0.5, m
                 print("more than 100 iterations to adjust the step size")
                 break
 
+        #check for early convergence criterion
+        if abs(f(candidate)-f(old))< 1e-6:
+            update_progress(1,message= "early convergence at {} iterations".format(i))
+            break
+
         values = np.concatenate((values,candidate.reshape(1,len(candidate))))
         energies.append(f(candidate))
+
 
         old = candidate
         if i%5 == 0 or i == max_iter-1:
@@ -108,7 +115,7 @@ def line_search_gd(model, x0 = None, lambda_ = 1e-4,  alpha = 0.2, beta = 0.5, m
     if trace:
         return values,energies
     if RETURN:
-        return old
+        return old,i+1
 
 
 def Wolfe_cond_gd(model, lambda_0 = None, initial = None, max_iter = 10,
@@ -121,10 +128,10 @@ def Wolfe_cond_gd(model, lambda_0 = None, initial = None, max_iter = 10,
         lambda_0 = 1e-3
 
     # trace for vizualization purpose
-    if trace:
-        trace_theta = [initial]
-        trace_lambdas = [lambda_0]
-        trace_energy = [model.neg_log_posterior(initial)]
+
+    trace_theta = [initial]
+    trace_lambdas = [lambda_0]
+    trace_energy = [model.neg_log_posterior(initial)]
 
     theta = initial.copy()
     step_size = lambda_0
@@ -138,18 +145,30 @@ def Wolfe_cond_gd(model, lambda_0 = None, initial = None, max_iter = 10,
                                         model.neg_log_posterior_grad,
                                         theta,step_size,
                                         c1,c2)
+        #accept the proposal
         if checks[0] and checks[1]:
-            if trace:
-                trace_energy.append(model.neg_log_posterior(proposal))
-                trace_theta.append(proposal)
-                trace_lambdas.append(step_size)
+            trace_energy.append(model.neg_log_posterior(proposal))
+            trace_theta.append(proposal)
+            trace_lambdas.append(step_size)
+
+            #convergence check
+            if abs(model.neg_log_posterior(theta)-model.neg_log_posterior(proposal))< 1e-6:
+                update_progress(1,message= "early convergence at {} iterations".format(i))
+                theta = proposal
+                break
+
             theta = proposal
+
+
+        #update the step size according to the Wolfe conditions
         elif checks[0]:
             step_size *= beta_C1
         elif checks[1]:
             step_size *= beta_C2
         else:
             raise RuntimeError("Wolfe conditions both wrong, gradient must be wrong")
+
+
         if i%5==0 or i == max_iter-1:
             update_progress((i+1)/max_iter)
     end = time.time()
@@ -159,9 +178,10 @@ def Wolfe_cond_gd(model, lambda_0 = None, initial = None, max_iter = 10,
         model.results["Wolfe_cond_gd"] = theta
 
     if RETURN:
-        return theta
-    if trace:
-        return trace_theta, trace_energy, trace_lambdas
+        if trace:
+            return trace_theta, trace_energy, trace_lambdas
+        return theta,i+1
+
 
 def newton_gd(model,initial = None, max_iter = 10,
                 trace = False, RETURN = False):
@@ -203,8 +223,53 @@ def newton_gd(model,initial = None, max_iter = 10,
     if RETURN:
         return theta
 
-def stochastic_gd(model):
-    return NotImplemented
+def stochastic_gd(model, step_size = 1e-4, max_iter = 100, trace = False, RETURN = False, save = True):
+
+    X = model.data.copy()
+    y = model.response.copy()
+
+    initial = np.random.rand(model.size)
+    #dirty fix for the variance
+    initial[0] += 1
+
+    trace_theta = []
+    trace_energy = []
+
+    theta = initial
+    start = time.time()
+
+    fun = model.neg_log_posterior
+    grad_fun = model.neg_log_posterior_grad
+
+    batch_size = 50
+    for i in range(max_iter):
+
+        #compute gradient on only a subset of the data points
+        for y_batch,x_batch in batch_iter(y,X,batch_size = batch_size):
+            #update and append
+            theta = theta - step_size*grad_fun(theta,X = x_batch,y = y_batch)
+            trace_theta.append(theta)
+            trace_energy.append(fun(theta))
+
+        #convergence check
+        if len(trace_theta) > 3:
+            if abs(fun(theta)-fun(trace_theta[-2]))< 1e-6:
+                update_progress(1,message= "early convergence at {} iterations".format(i))
+                break
+
+
+        if i%5 == 0 or i == max_iter-1:
+            update_progress((i+1)/max_iter)
+
+    end = time.time()
+    print("  duration: {}".format(str(datetime.timedelta(seconds= round(end-start)))))
+
+    if trace:
+        return trace_energy,trace_theta
+    elif RETURN:
+        return theta,i+1
+
+
 
 
 

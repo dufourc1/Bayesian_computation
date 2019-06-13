@@ -13,7 +13,7 @@ def laplace_approx(model,name_method = None, integral_value = False, method = No
         theta_map = gradient_descent.vanilla_gd(model,
                                     max_iter = 8000,RETURN = True, save = False)
     else:
-        theta_map = method(model, max_iter = 8000,RETURN = True, save = False)
+        theta_map, iterations = method(model, max_iter = 8000,RETURN = True, save = False)
 
     curvature = model.neg_log_posterior_hessian(theta_map)
     #curvature = mat.sym(curvature)
@@ -34,7 +34,7 @@ def laplace_approx(model,name_method = None, integral_value = False, method = No
     model.results[name_method] = [theta_map,np.linalg.inv(curvature)]
 
     stop = time.time()
-    model.time[name_method] = [stop-start,8000]
+    model.time[name_method] = [stop-start,iterations]
     if integral_value:
         return abs(det)**(-0.5)*model.posterior(theta_map)*(2*pi)**(model.size/2)
     else :

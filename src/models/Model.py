@@ -90,9 +90,9 @@ class Model(object):
     def log_posterior(self,theta):
         return self.prior.log_prior(theta) + self.cond_model.log_l(theta)
 
-    def log_posterior_grad(self,theta):
+    def log_posterior_grad(self,theta,y = None, X= None):
         return self.prior.log_prior_grad(theta)\
-                +self.cond_model.log_l_grad(theta)
+                +self.cond_model.log_l_grad(theta,y,X)
 
     def log_posterior_hessian(self,theta):
         return self.prior.log_prior_hes(theta)\
@@ -102,8 +102,8 @@ class Model(object):
     def neg_log_posterior(self,theta):
         return -self.log_posterior(theta)
 
-    def neg_log_posterior_grad(self,theta):
-        return -self.log_posterior_grad(theta)
+    def neg_log_posterior_grad(self,theta,y = None, X= None):
+        return -self.log_posterior_grad(theta,y,X)
 
     def neg_log_posterior_hessian(self,theta):
         return -self.log_posterior_hessian(theta)

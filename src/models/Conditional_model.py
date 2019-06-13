@@ -222,23 +222,33 @@ class Multilogistic(Conditional_model):
 
 
 
-    def log_l(self,theta):
+    def log_l(self,theta, y = None, X = None):
+
+        if y is None:
+            y = self.y
 
         #computing probabilities
-        P = self.extract_proba(theta)
+        P = self.extract_proba(theta,X)
         #compute the log_likelihood in a satble manner
-        return np.sum(self.y*np.log(P)+(1-self.y)*np.log(1-P))
+        return np.sum(y*np.log(P)+(1-y)*np.log(1-P))
 
 
 
     ## TODO: Implement those if time for Multilogistic regression
     # now only valid for classic logistic regression
 
-    def log_l_grad(self,theta):
+    def log_l_grad(self,theta, y = None, X = None):
+
         if self.number_classes > 2:
             raise NotImplementedError("only implemented for logistic regression")
-        P = self.extract_proba(theta)
-        inter = (self.y - P)*self.X.T
+
+        if y is None:
+            y = self.y
+        if X is None:
+            X = self.X
+
+        P = self.extract_proba(theta,X)
+        inter = (y - P)*X.T
         return np.sum(inter,axis = 1)
 
     def log_l_hes(self, theta):
