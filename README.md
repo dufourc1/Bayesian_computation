@@ -97,7 +97,7 @@ See this [issue](https://github.com/dufourc1/Bayesian_computation/issues/2) for 
 
     Wolfe_cond_gd
 
-    stochastic_gd (notImplemented)
+    stochastic_gd 
 
     newton_gd (unstable)
     
