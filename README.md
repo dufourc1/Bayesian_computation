@@ -5,6 +5,8 @@ Project for the course of Bayesian computation (MATH-435).
 The purpose of this project was to write the low levels functions and algorithms used in bayesian
 statistics and to use them on a simple dataset.
 
+(Jupyter Lab is recommended when running `testing.pynb` for a better visual experience)
+
 ## Libraries used
 The following libraries were used for this project, with Python 3.6.8
 
