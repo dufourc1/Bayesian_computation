@@ -26,7 +26,7 @@ def rejection_sampling(model,proposal_cdf, proposal_simulate,samples_size, K):
     while len(accepted) < samples_size:
         samples = proposal_simulate(model.size)
         weights = np.exp(model.log_posterior(samples)-np.log(proposal_cdf(samples)))/K
-        threshold = np.random.randn(1)
+        threshold = np.random.uniform()
         if threshold < weights:
             accepted.append(samples)
 
