@@ -24,6 +24,7 @@ Graphical:
 
     matplotlib  (3.1.0)
     seaborn     (0.9.0)
+    plotly      (3.9.0)
 
 
 
